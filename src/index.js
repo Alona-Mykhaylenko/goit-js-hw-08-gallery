@@ -1,5 +1,4 @@
 import galleryItems from "./gallery-items.js";
-console.log(galleryItems);
 
 const refs = {
   jsGallery: document.querySelector(".js-gallery"),
@@ -11,7 +10,7 @@ const refs = {
 };
 
 const gallery = galleryItems
-  .map((image) => {
+  .map((image, index) => {
     return `<li class="gallery__item">
   <a
     class="gallery__link"
@@ -21,6 +20,7 @@ const gallery = galleryItems
       class="gallery__image"
       src="${image.preview}"
       data-source="${image.original}"
+      data-index="${index}"
       alt="${image.description}"
     />
   </a>
@@ -30,6 +30,8 @@ const gallery = galleryItems
 
 refs.jsGallery.insertAdjacentHTML("afterbegin", gallery);
 
+let currentIndex = 0;
+
 refs.jsGallery.addEventListener("click", (event) => {
   event.preventDefault();
   const targetImage = event.target;
@@ -37,18 +39,14 @@ refs.jsGallery.addEventListener("click", (event) => {
   if (targetImage.classList.contains("gallery")) return;
 
   refs.lightBox.classList.add("is-open");
-  refs.lightboxImage.src = targetImage.dataset.source;
-  refs.lightboxImage.alt = targetImage.alt;
+  currentIndex = +targetImage.dataset.index;
+  replaceImage(targetImage.dataset.source, targetImage.alt);
+  window.addEventListener("keydown", galleryScroll);
 });
 
 refs.jsLightbox.addEventListener("click", (event) => {
-  if (
-    event.target.classList.contains("lightbox__overlay") ||
-    event.target.classList.contains("lightbox__button") ||
-    event.target.code === "Escape"
-  ) {
-    closeLightBox(event);
-  }
+  if (event.target.tagName === "IMG") return;
+  else closeLightBox(event);
 });
 
 window.addEventListener("keydown", (event) => {
@@ -59,38 +57,41 @@ window.addEventListener("keydown", (event) => {
 
 function closeLightBox(event) {
   refs.lightBox.classList.remove("is-open");
-  refs.lightboxImage.src = "";
-  refs.lightboxImage.alt = "";
+  replaceImage();
+  window.removeEventListener("keydown", galleryScroll);
 }
 
-// refs.lightBox.addEventListener("keydown", (event) => {
-//   if (
-//     refs.lightBox.classList.contains("is-open") &&
-//     event.code === "ArrowRight"
-//   ) {
-//     const imageArray = refs.jsGallery.children;
-//     console.log(imageArray);
+function replaceImage(src, alt) {
+  refs.lightboxImage.src = src;
+  refs.lightboxImage.alt = alt;
+}
 
-//     const galleryMove = [...imageArray].map((item, index) => {
-//       return item[index+1];
-//     });
-//   }
-// });
+// ============== Adding scrolling of images in modal window=============  //
 
-// refs.lightBox.addEventListener("keydown", (event) => {
-//   if (
-//     refs.lightBox.classList.contains("is-open") &&
-//     event.code === "ArrowRight"
-//   ) {
-//     const imageArray = refs.jsGallery.children;
-//     console.log(imageArray);
+function galleryScroll(event) {
+  if (event.code === "ArrowRight") {
+    if (currentIndex === galleryItems.length) {
+      currentIndex = 0;
+    }
+    currentIndex += 1;
+    replaceImage(
+      galleryItems[currentIndex].original,
+      galleryItems[currentIndex].description
+    );
+  } else if (event.code === "ArrowLeft") {
+    if (currentIndex === 0) {
+      currentIndex = galleryItems.length;
+    }
+    currentIndex -= 1;
+    replaceImage(
+      galleryItems[currentIndex].original,
+      galleryItems[currentIndex].description
+    );
+  }
+}
 
-//     currentImageIndex = imageArray.indexOf(targetImage);
-
-//     refs.lightboxImage.src = targetImage[currentImageIndex + 1].dataset.source;
-//     // refs.lightboxImage.alt = targetImage.alt;
-//   }
-// });
+// - Add checking for the border index
+// - add and remove event listener only when opening the modal window
 
 // Создай галерею с возможностью клика по ее элементам и
 // просмотра полноразмерного изображения в модальном окне.
