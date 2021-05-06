@@ -4,8 +4,10 @@ console.log(galleryItems);
 const refs = {
   jsGallery: document.querySelector(".js-gallery"),
   jsLightbox: document.querySelector(".js-lightbox"),
+  lightBox: document.querySelector(".lightbox"),
   modalCloseBtn: document.querySelector(".lightbox__button"),
   lightboxImage: document.querySelector(".lightbox__image"),
+  lighBoxOverlay: document.querySelector(".lightbox__overlay"),
 };
 
 const gallery = galleryItems
@@ -28,28 +30,67 @@ const gallery = galleryItems
 
 refs.jsGallery.insertAdjacentHTML("afterbegin", gallery);
 
-refs.jsGallery.addEventListener("click", onImageClick);
-
-function onImageClick(event) {
+refs.jsGallery.addEventListener("click", (event) => {
+  event.preventDefault();
   const targetImage = event.target;
 
-  if (targetImage.classList.contains("gallery")) {
-    return;
-  }
-  targetImage.classList.add("is-open");
+  if (targetImage.classList.contains("gallery")) return;
 
-  refs.lightboxImage.src = targetImage.src;
+  refs.lightBox.classList.add("is-open");
+  refs.lightboxImage.src = targetImage.dataset.source;
   refs.lightboxImage.alt = targetImage.alt;
+});
+
+refs.jsLightbox.addEventListener("click", (event) => {
+  if (
+    event.target.classList.contains("lightbox__overlay") ||
+    event.target.classList.contains("lightbox__button") ||
+    event.target.code === "Escape"
+  ) {
+    closeLightBox(event);
+  }
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.code === "Escape") {
+    closeLightBox(event);
+  }
+});
+
+function closeLightBox(event) {
+  refs.lightBox.classList.remove("is-open");
+  refs.lightboxImage.src = "";
+  refs.lightboxImage.alt = "";
 }
 
-// refs.modalCloseBtn.addEventListener("click", onModalCloseBtnClick);
+// refs.lightBox.addEventListener("keydown", (event) => {
+//   if (
+//     refs.lightBox.classList.contains("is-open") &&
+//     event.code === "ArrowRight"
+//   ) {
+//     const imageArray = refs.jsGallery.children;
+//     console.log(imageArray);
 
-// function onModalCloseBtnClick(event) {
-//   const openImage = refs.jsGallery.querySelector("is-open");
-//   if (openImage) {
-//     openImage.classList.remove("is-open");
+//     const galleryMove = [...imageArray].map((item, index) => {
+//       return item[index+1];
+//     });
 //   }
-// }
+// });
+
+// refs.lightBox.addEventListener("keydown", (event) => {
+//   if (
+//     refs.lightBox.classList.contains("is-open") &&
+//     event.code === "ArrowRight"
+//   ) {
+//     const imageArray = refs.jsGallery.children;
+//     console.log(imageArray);
+
+//     currentImageIndex = imageArray.indexOf(targetImage);
+
+//     refs.lightboxImage.src = targetImage[currentImageIndex + 1].dataset.source;
+//     // refs.lightboxImage.alt = targetImage.alt;
+//   }
+// });
 
 // Создай галерею с возможностью клика по ее элементам и
 // просмотра полноразмерного изображения в модальном окне.
@@ -64,3 +105,8 @@ function onImageClick(event) {
 // Очистка значения атрибута src элемента img.lightbox__image. Это необходимо для того,
 // чтобы при следующем открытии модального окна, пока грузится изображение, мы не видели
 // предыдущее.
+
+// Закрытие модального окна по клику на div.lightbox__overlay.
+// Закрытие модального окна по нажатию клавиши ESC.
+// Пролистывание изображений галереи в открытом модальном окне
+// клавишами "влево" и "вправо".
